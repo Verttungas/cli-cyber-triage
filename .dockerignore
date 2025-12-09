@@ -1,0 +1,57 @@
+# Git
+.git/
+.gitignore
+.github/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Logs (se montan como volume)
+logs/
+*.log
+
+# Evidencias (se montan como volume)
+evidencia_temp/*
+
+# Data (se monta como volume)
+data/*.db
+data/*.sqlite*
+
+# Environment Variables
+.env
+.env.local
+*.env
+
+# Docker
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+!README.md
+
+# Testing
+tests/
+test_*.py
+*_test.py
+
+# Misc
+*.bak
+*.tmp
+.cache/

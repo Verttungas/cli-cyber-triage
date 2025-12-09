@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  cyber-triage-cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    container_name: cyber-triage-cli
+    
+    restart: unless-stopped
+    
+    # Sin puertos expuestos (es CLI, no web)
+    # ports: []
+    
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CYBERHAVEN_API_KEY=${CYBERHAVEN_API_KEY}
+      - CYBERHAVEN_API_URL=${CYBERHAVEN_API_URL:-https://payclip.cyberhaven.io/public}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET:-clip-cyberhaven-upload}
+      - EVIDENCE_DIR=./evidencia_temp
+      - INCIDENT_DAYS_BACK=${INCIDENT_DAYS_BACK:-3}
+      - PYTHONUNBUFFERED=1
+    
+    volumes:
+      - ./data:/home/cybertriage/app/data
+      - ./evidencia_temp:/home/cybertriage/app/evidencia_temp
+      - ./logs:/home/cybertriage/app/logs
+      - ./prompts:/home/cybertriage/app/prompts:ro
+    
+    networks:
+      - cyber-triage-net
+    
+    # Para CLI interactivo
+    stdin_open: true
+    tty: true
+    
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  cyber-triage-net:
+    driver: bridge
