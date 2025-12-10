@@ -26,6 +26,7 @@ class GeminiAnalyzer:
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY no encontrada. Configura la variable de entorno o pasa api_key.")
+        
         self.client = genai.Client(api_key=self.api_key)
         self.model_name = model_name
         self.thinking_level = thinking_level
@@ -222,7 +223,7 @@ class GeminiAnalyzer:
                 model=self.model_name,
                 contents=full_prompt,
                 config=types.GenerateContentConfig(
-                    thinking_level=self.thinking_level,
+                    thinking_config=types.ThinkingConfig(thinking_level=self.thinking_level),
                     temperature=1.0,
                     response_mime_type="application/json",
                     response_json_schema=self.response_schema,
