@@ -159,7 +159,7 @@ def process_incident(incident):
 
 def main():
     logger.info("="*60)
-    logger.info("CYBER-TRIAGE: EVIDENCE DOWNLOADER")
+    logger.info("CYBER-TRIAGE: EVIDENCE DOWNLOADER (DIARIO)")
     logger.info("="*60)
     
     token = get_token()
@@ -167,27 +167,36 @@ def main():
         logger.error("No se pudo obtener token. Abortando.")
         return
 
-    days_back = int(os.getenv("INCIDENT_DAYS_BACK", "3"))
-    start_date = (datetime.utcnow() - timedelta(days=days_back)).strftime('%Y-%m-%dT%H:%M:%SZ')
-    logger.info(f"Buscando incidentes desde: {start_date} ({days_back} días atrás)")
+    # Definir "Día Presente" (00:00:00 UTC)
+    start_of_day = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    start_date_str = start_of_day.strftime('%Y-%m-%dT%H:%M:%SZ')
+    
+    logger.info(f"Buscando incidentes del día actual desde: {start_date_str}")
 
     try:
+        # Request optimizado: Solo 5, ordenados por fecha descendente, del día actual
         resp = requests.post(
             f"{CYBERHAVEN_BASE_URL}/v2/incidents/list",
             headers={"Authorization": f"Bearer {token}"},
             json={
-                "page_request": {"size": 20, "sort_by": "event_time"},
-                "filter": {"start_time": start_date}
+                "page_request": {
+                    "size": 5, 
+                    "sort_by": "event_time",
+                    "sort_direction": "DESC"
+                },
+                "filter": {
+                    "start_time": start_date_str
+                }
             },
             timeout=30
         )
         resp.raise_for_status()
         incidents = resp.json().get('resources', [])
-        logger.info(f"Incidentes encontrados: {len(incidents)}")
+        logger.info(f"Incidentes encontrados hoy: {len(incidents)}")
         
         for inc in incidents:
             incident_id = inc.get('id')
-            logger.info(f"\nProcesando: {incident_id}")
+            logger.info(f"Procesando: {incident_id}")
             process_incident(inc)
             
     except Exception as e:
@@ -195,7 +204,7 @@ def main():
         return
     
     logger.info("\n" + "="*60)
-    logger.info("✅ DESCARGA COMPLETADA")
+    logger.info("✅ DESCARGA DIARIA COMPLETADA")
     logger.info("="*60)
 
 
