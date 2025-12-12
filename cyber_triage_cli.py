@@ -5,9 +5,10 @@ Cyber-Triage CLI - Sistema de análisis automatizado de incidentes DLP
 
 import os
 from pathlib import Path
-from rich.console import Console
+from rich.console import Console, Group
 from rich.table import Table
 from rich.panel import Panel
+from rich.text import Text
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.prompt import Prompt, Confirm
 from rich import box
@@ -58,7 +59,7 @@ def initialize_system():
 def download_incidents():
     """Ejecuta descarga de incidentes"""
     console.print(Panel.fit(
-        "📥 Descargando incidentes de Cyberhaven y archivos de S3...",
+        "📥 Descargando incidentes del día (Max 5)...",
         border_style="blue"
     ))
     
@@ -117,55 +118,63 @@ def list_incidents():
 
 
 def display_analysis(result):
-    """Muestra resultado del análisis"""
+    """Muestra resultado del análisis optimizado para EC2"""
     if not result['success']:
         console.print(f"[red]❌ Error: {result['error']}[/red]\n")
         return
     
-    # Veredicto con estilo
-    verdict_styles = {
-        'TRUE_POSITIVE': ('🚨', 'red'),
-        'FALSE_POSITIVE': ('✅', 'green'),
-        'REQUIRES_REVIEW': ('⚠️', 'yellow')
+    # Mapeo de colores
+    colors = {
+        'TRUE_POSITIVE': 'red',
+        'FALSE_POSITIVE': 'green',
+        'REQUIRES_REVIEW': 'yellow'
     }
+    color = colors.get(result['verdict'], 'white')
+    emoji = {'TRUE_POSITIVE': '🚨', 'FALSE_POSITIVE': '✅', 'REQUIRES_REVIEW': '⚠️'}.get(result['verdict'], '❓')
     
-    emoji, color = verdict_styles.get(result['verdict'], ('❓', 'white'))
+    # Datos Contextuales
+    ctx = result.get('incident_context', {})
     
-    # Panel principal
-    content = f"""
-[bold]Veredicto:[/bold] {emoji} [{color}]{result['verdict']}[/{color}]
-[bold]Confianza:[/bold] {result['confidence']*100:.1f}%
-[bold]Riesgo:[/bold] {result['risk_level']}
-[bold]Tiempo:[/bold] {result['processing_time']:.2f}s
-[bold]Archivo:[/bold] {result.get('file_name', 'Sin archivo') if result.get('has_file') else 'Sin archivo'}
+    # Crear Tabla de Contexto (Sin bordes, integrada)
+    context_table = Table(box=None, show_header=False, padding=(0, 2))
+    context_table.add_column(style="bold white")
+    context_table.add_column(style="white")
+    
+    context_table.add_row("Usuario:", str(ctx.get('user', 'N/A')))
+    context_table.add_row("Origen:", str(ctx.get('source', 'N/A')))
+    context_table.add_row("Destino:", f"[{color}]{ctx.get('destination', 'N/A')}[/{color}]")
+    
+    # Construir contenido del Panel Principal
+    main_content = Group(
+        Panel(
+            result.get('executive_summary', 'Sin resumen disponible.'),
+            title="[bold]Resumen Ejecutivo[/bold]",
+            border_style="white"
+        ),
+        Text(""), # Espaciador
+        context_table,
+        Text(""), # Espaciador
+        Panel(
+            result['reasoning'],
+            title="[bold]Análisis Técnico Detallado[/bold]",
+            border_style=color
+        )
+    )
 
-[bold]Resumen:[/bold]
-{result['summary']}
-"""
+    # Renderizar Panel Final
+    console.print(Panel(
+        main_content,
+        title=f"{emoji} {result['verdict']}",
+        subtitle=f"Confianza: {result['confidence']*100:.1f}% | Riesgo: {result.get('risk_level', 'N/A')}",
+        border_style=color,
+        expand=True
+    ))
     
-    console.print(Panel(content, title="📊 Resultado del Análisis", border_style=color))
-    
-    # Razonamiento
-    console.print("\n[bold]🔍 Razonamiento:[/bold]")
-    console.print(result['reasoning'])
-    
-    # Indicadores
+    # Indicadores (Solo lista simple)
     if result.get('indicators'):
-        console.print("\n[bold]⚠️  Indicadores:[/bold]")
+        console.print("[bold]Indicadores detectados:[/bold]")
         for ind in result['indicators']:
-            console.print(f"  • {ind}")
-    
-    # Recomendaciones
-    if result.get('recommendations'):
-        console.print("\n[bold]💡 Recomendaciones:[/bold]")
-        for rec in result['recommendations']:
-            console.print(f"  • {rec}")
-    
-    # Razones de falso positivo
-    if result.get('false_positive_reasons'):
-        console.print("\n[bold]✅ Razones de Falso Positivo:[/bold]")
-        for reason in result['false_positive_reasons']:
-            console.print(f"  • {reason}")
+            console.print(f"  • {ind}", style="dim")
     
     console.print()
 
