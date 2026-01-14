@@ -1,63 +1,14 @@
-# ============================================================================
-# Cyber-Triage CLI Requirements
-# Sistema de análisis DLP con Gemini 2.5 Pro
-# Python 3.10+
-# ============================================================================
-
-# ============================================================================
-# CORE: Gemini 2.5 Pro API (Estable)
-# ============================================================================
-google-generativeai==0.8.5   # API estable de Gemini
-
-# ============================================================================
-# CLI: Rich Terminal UI
-# ============================================================================
-rich==13.7.1                 # CLI interactiva con colores y formatting
-
-# ============================================================================
-# AWS: S3 y Cyberhaven Integration
-# ============================================================================
-boto3==1.35.76               # Cliente AWS S3  
-botocore==1.35.76            # Core de boto3
-requests==2.32.3             # API HTTP para Cyberhaven
-
-# ============================================================================
-# DATABASE: SQLite viene built-in
-# ============================================================================
-pandas==2.2.3                # DataFrames para análisis (opcional)
-
-# ============================================================================
-# DOCUMENT PROCESSING: PDF, Word, Excel
-# ============================================================================
-PyPDF2==3.0.1                # Lectura de PDFs
-python-docx==1.1.2           # Lectura de Word (.docx)
-openpyxl==3.1.5              # Lectura de Excel (.xlsx)
-python-pptx==1.0.2           # Lectura de PowerPoint (.pptx)
-
-# ============================================================================
-# IMAGE PROCESSING
-# ============================================================================
-Pillow==11.0.0               # Manipulación de imágenes
-
-# ============================================================================
-# UTILITIES
-# ============================================================================
-python-dotenv==1.0.1         # Manejo de .env files
-python-dateutil==2.9.0       # Parsing de fechas
-
-# ============================================================================
-# NOTES
-# ============================================================================
-# - Python 3.10+ requerido
-# - Amazon Linux 2 compatible vía Docker
-# - Docker: python:3.11-slim base image
-#
-# INSTALACIÓN LOCAL:
-#   pip install -r requirements.txt
-#
-# INSTALACIÓN EN AMAZON LINUX 2 (sin Docker):
-#   pip3 install -r requirements.txt --break-system-packages
-#
-# DOCKER (Recomendado):
-#   docker build -t cyber-triage-cli .
-# ============================================================================
+google-generativeai==0.8.5
+rich==13.7.1
+boto3==1.35.76
+botocore==1.35.76
+requests==2.32.3
+pandas==2.2.3
+PyPDF2==3.0.1
+python-docx==1.1.2
+openpyxl==3.1.5
+python-pptx==1.0.2
+Pillow==11.0.0
+python-dotenv==1.0.1
+python-dateutil==2.9.0
+APScheduler==3.10.4
